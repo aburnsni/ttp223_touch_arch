@@ -5,13 +5,13 @@ const int buttons = 5;
 
 //MIDI Setup
 int* song[buttons] = {NOTE_C3, NOTE_D3, NOTE_E3, NOTE_F3, NOTE_G3};
-int midiChannel[buttons] = {5,5,5,5,5}; // midi channel for each button
+int midiChannel[buttons] = {5, 5, 5, 5, 5}; // midi channel for each button
 int instruments[16] = {102, 999, 999, 999, 999, 999, 999, 999, 999, 999 /*Drums*/, 999, 999, 999, 999, 999, 999};
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial, MIDI);  
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial, MIDI);
 
 
-const int buttonPin[buttons] = {2, 3, 4, 5,6};
-int buttonState[buttons] = {1, 1, 1, 1,1};
+const int buttonPin[buttons] = {2, 3, 4, 5, 6};
+int buttonState[buttons] = {1, 1, 1, 1, 1};
 const int powerled = 13;
 
 bool playing[buttons] = {false, false, false, false, false};  //Is note currently playing
@@ -37,8 +37,8 @@ void setup() {
   }
 
   for (int i = 0; i < buttons; i++) {
-  lasttrig[i] = millis();
-}
+    lasttrig[i] = millis();
+  }
 }
 
 void loop() {
