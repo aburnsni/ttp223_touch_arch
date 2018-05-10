@@ -4,14 +4,15 @@
 const int buttons = 5;
 
 //MIDI Setup
-int* song[buttons] = {NOTE_C3, NOTE_D3, NOTE_E3, NOTE_F3, NOTE_G3};
+int* song[buttons] = {NOTE_C3, NOTE_D3, NOTE_F3, NOTE_G3, NOTE_A3};
 int midiChannel[buttons] = {5, 5, 5, 5, 5}; // midi channel for each button
 int instruments[16] = {102, 999, 999, 999, 999, 999, 999, 999, 999, 999 /*Drums*/, 999, 999, 999, 999, 999, 999};
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial, MIDI);
 
 
-const int buttonPin[buttons] = {2, 3, 4, 5, 6};
+const int buttonPin[buttons] = {2, 3, 4, 5, 6};  //y gr st w o
 int buttonState[buttons] = {1, 1, 1, 1, 1};
+const int ledPin[buttons] = {8, 9, 10, 11, 12};
 const int powerled = 13;
 
 bool playing[buttons] = {false, false, false, false, false};  //Is note currently playing
@@ -20,7 +21,7 @@ unsigned long debounce = 10;
 
 void setup() {
   MIDI.begin();
-  Serial.begin(115200);  //for hairless midi
+ // Serial.begin(115200);  //for hairless midi
   delay(200);
 
   MIDIsoftreset();  // Midi Reset
@@ -34,23 +35,47 @@ void setup() {
   for (int i = 0; i < buttons; i++)
   {
     pinMode(buttonPin[i], INPUT_PULLUP);
+    pinMode(ledPin[i], OUTPUT);
+    digitalWrite(ledPin[i], LOW);
   }
-
   for (int i = 0; i < buttons; i++) {
     lasttrig[i] = millis();
   }
+
+  for (int i = 0 ; i < buttons; i++) {
+    digitalWrite(ledPin[i], HIGH);
+    for (int j = 0; j < buttons; j++) {
+      if (j != i) {
+        digitalWrite(ledPin[j], LOW);
+      }
+    }
+    delay(100);
+  }
+  for (int i = ( buttons - 2) ; i >= 0; i--) {
+    digitalWrite(ledPin[i], HIGH);
+    for (int j = 0; j < buttons; j++) {
+      if (j != i) {
+        digitalWrite(ledPin[j], LOW);
+      }
+    }
+    delay(100);
+  }
+  digitalWrite(ledPin[0], LOW);
 }
 
 void loop() {
+
   for (uint8_t i = 0; i < buttons; i++) {
     buttonState[i] = digitalRead(buttonPin[i]);
     if ((buttonState[i] == HIGH) && (playing[i] == false) && (millis() - lasttrig[i] > debounce)) {
-
+      // turn LED on:
+      digitalWrite(ledPin[i], HIGH);
       MIDI.sendNoteOn(song[i], 100, midiChannel[i]);
       playing[i] = true;
       lasttrig[i] = millis();
     } else if ((buttonState[i] == LOW) && (playing[i] == true)) {
-
+      // turn LED off:
+      digitalWrite(ledPin[i], LOW);
       MIDI.sendNoteOff(song[i], 100, midiChannel[i]);
       playing[i] = false;
     }
