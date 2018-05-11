@@ -27,23 +27,6 @@ bool playing[buttons] = {false, false, false, false, false};  //Is note currentl
 unsigned long lasttrig[buttons];
 unsigned long debounce = 10;
 
-// Interupt routine for rotary enconder
-void isr() {
-  static unsigned long lastInterupTime = 0;
-  unsigned long interuptTime = millis();
-
-  // Debounce signals to 5ms
-  if (interuptTime - lastInterupTime > 5) {
-    if (digitalRead(encDt) ==LOW) {
-      virtualPosition++;
-    } else {
-      virtualPosition--;
-    }
-    //Restrict rotary encoder values
-    virtualPosition = min(maxValue-1, max(0, virtualPosition));
-    lastInterupTime = interuptTime;
-  }
-}
 
 void setup() {
   MIDI.begin();
@@ -99,6 +82,22 @@ void loop() {
     Serial.print(virtualPosition > lastCount ? "Up :" : "Down :");
     Serial.println(virtualPosition);
     lastCount = virtualPosition;
+  }
+// Interupt routine for rotary enconder
+void isr() {
+  static unsigned long lastInterupTime = 0;
+  unsigned long interuptTime = millis();
+
+  // Debounce signals to 5ms
+  if (interuptTime - lastInterupTime > 5) {
+    if (digitalRead(encDt) ==LOW) {
+      virtualPosition++;
+    } else {
+      virtualPosition--;
+    }
+    //Restrict rotary encoder values
+    virtualPosition = min(maxValue-1, max(0, virtualPosition));
+    lastInterupTime = interuptTime;
   }
 }
 
