@@ -73,25 +73,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(encClk), isr, LOW);
 
   //Flash LEDs to signal power on
-  for (int i = 0 ; i < buttons; i++) {
-    digitalWrite(ledPin[i], HIGH);
-    for (int j = 0; j < buttons; j++) {
-      if (j != i) {
-        digitalWrite(ledPin[j], LOW);
-      }
-    }
-    delay(100);
-  }
-  for (int i = ( buttons - 2) ; i >= 0; i--) {
-    digitalWrite(ledPin[i], HIGH);
-    for (int j = 0; j < buttons; j++) {
-      if (j != i) {
-        digitalWrite(ledPin[j], LOW);
-      }
-    }
-    delay(100);
-  }
-  digitalWrite(ledPin[0], LOW);
+  flashLEDs();
 }
 
 void loop() {
@@ -118,6 +100,28 @@ void loop() {
     Serial.println(virtualPosition);
     lastCount = virtualPosition;
   }
+}
+
+void flashLEDs() {
+for (int i = 0 ; i < buttons; i++) {
+    digitalWrite(ledPin[i], HIGH);
+    for (int j = 0; j < buttons; j++) {
+      if (j != i) {
+        digitalWrite(ledPin[j], LOW);
+      }
+    }
+    delay(200);
+  }
+  for (int i = ( buttons - 2) ; i >= 0; i--) {
+    digitalWrite(ledPin[i], HIGH);
+    for (int j = 0; j < buttons; j++) {
+      if (j != i) {
+        digitalWrite(ledPin[j], LOW);
+      }
+    }
+    delay(200);
+  }
+  digitalWrite(ledPin[0], LOW);
 }
 
 void MIDIsoftreset()  // switch off ALL notes on channel 1 to 16
