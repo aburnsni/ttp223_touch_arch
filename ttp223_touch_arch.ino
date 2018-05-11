@@ -15,9 +15,35 @@ int buttonState[buttons] = {1, 1, 1, 1, 1};
 const int ledPin[buttons] = {8, 9, 10, 11, 12};
 const int powerled = 13;
 
+//Rotary enconder
+const int encClk = 2; // Needs Interupt pin
+const int encDt = 3;
+const int encSw = 4;
+int lastCount = 0;
+volatile int virtualPosition = 0;
+const int maxValue = 7; //The number of values on the roatary encoder
+
 bool playing[buttons] = {false, false, false, false, false};  //Is note currently playing
 unsigned long lasttrig[buttons];
 unsigned long debounce = 10;
+
+// Interupt routine for rotary enconder
+void isr() {
+  static unsigned long lastInterupTime = 0;
+  unsigned long interuptTime = millis();
+
+  // Debounce signals to 5ms
+  if (interuptTime - lastInterupTime > 5) {
+    if (digitalRead(encDt) ==LOW) {
+      virtualPosition++;
+    } else {
+      virtualPosition--;
+    }
+    //Restrict rotary encoder values
+    virtualPosition = min(maxValue-1, max(0, virtualPosition));
+    lastInterupTime = interuptTime;
+  }
+}
 
 void setup() {
   MIDI.begin();
@@ -41,7 +67,12 @@ void setup() {
   for (int i = 0; i < buttons; i++) {
     lasttrig[i] = millis();
   }
+  pinMode(encClk, INPUT);
+  pinMode(encDt, INPUT);
+  pinMode(encSw, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(encClk), isr, LOW);
 
+  //Flash LEDs to signal power on
   for (int i = 0 ; i < buttons; i++) {
     digitalWrite(ledPin[i], HIGH);
     for (int j = 0; j < buttons; j++) {
@@ -80,7 +111,13 @@ void loop() {
       playing[i] = false;
     }
   }
-  delay(1);
+
+  //Check rotary encoder
+  if (virtualPosition != lastCount) {
+    Serial.print(virtualPosition > lastCount ? "Up :" : "Down :");
+    Serial.println(virtualPosition);
+    lastCount = virtualPosition;
+  }
 }
 
 void MIDIsoftreset()  // switch off ALL notes on channel 1 to 16
