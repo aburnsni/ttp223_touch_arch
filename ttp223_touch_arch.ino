@@ -27,6 +27,11 @@ bool playing[buttons] = {false, false, false, false, false};  //Is note currentl
 unsigned long lasttrig[buttons];
 unsigned long debounce = 10;
 
+// HC595 LEDs
+const int ledClockPin = 5;
+const int ledLatchPin = 6;
+const int ledDataPin = 7;
+const char common = 'c';    // set to a/c for common anode/cathode
 
 void setup() {
   MIDI.begin();
@@ -54,6 +59,10 @@ void setup() {
   pinMode(encDt, INPUT);
   pinMode(encSw, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(encClk), isr, LOW);
+  //hc595 I/Os
+  pinMode(ledClockPin, OUTPUT);
+  pinMode(ledLatchPin, OUTPUT);
+  pinMode(ledDataPin, OUTPUT);
 
   //Flash LEDs to signal power on
   flashLEDs();
@@ -81,6 +90,10 @@ void loop() {
   if (virtualPosition != lastCount) {
     Serial.print(virtualPosition > lastCount ? "Up :" : "Down :");
     Serial.println(virtualPosition);
+
+    byte bits = myfnNumToBits(virtualPosition) ;
+    myfnUpdateDisplay(bits);    // display alphanumeric digit
+    
     lastCount = virtualPosition;
   }
 // Interupt routine for rotary enconder
@@ -136,5 +149,70 @@ void MIDIinstrumentset() {
     if (instruments[i] < 128) {
       MIDI.sendProgramChange(instruments[i], i + 1);
     }
+  }
+}
+
+void myfnUpdateDisplay(byte eightBits) {
+  if (common == 'a') {                  // using a common anonde display?
+    eightBits = eightBits ^ B11111111;  // then flip all bits using XOR 
+  }
+  digitalWrite(ledLatchPin, LOW);  // prepare shift register for data
+  shiftOut(ledDataPin, ledClockPin, LSBFIRST, eightBits); // send data
+  digitalWrite(ledLatchPin, HIGH); // update display
+}
+
+byte myfnNumToBits(int someNumber) {
+  switch (someNumber) {
+    case 0:
+      return B11111100;
+      break;
+    case 1:
+      return B01100000;
+      break;
+    case 2:
+      return B11011010;
+      break;
+    case 3:
+      return B11110010;
+      break;
+    case 4:
+      return B01100110;
+      break;
+    case 5:
+      return B10110110;
+      break;
+    case 6:
+      return B10111110;
+      break;
+    case 7:
+      return B11100000;
+      break;
+    case 8:
+      return B11111110;
+      break;
+    case 9:
+      return B11110110;
+      break;
+    case 10:
+      return B11101110; // Hexidecimal A
+      break;
+    case 11:
+      return B00111110; // Hexidecimal B
+      break;
+    case 12:
+      return B10011100; // Hexidecimal C or use for Centigrade
+      break;
+    case 13:
+      return B01111010; // Hexidecimal D
+      break;
+    case 14:
+      return B10011110; // Hexidecimal E
+      break;
+    case 15:
+      return B10001110; // Hexidecimal F or use for Fahrenheit
+      break;  
+    default:
+      return B10010010; // Error condition, displays three vertical bars
+      break;   
   }
 }
