@@ -10,7 +10,7 @@ int instruments[16] = {102, 999, 999, 999, 999, 999, 999, 999, 999, 999 /*Drums*
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial, MIDI);
 
 
-const int buttonPin[buttons] = {2, 3, 4, 5, 6};  //y gr st w o
+const int buttonPin[buttons] = {A4, A3, A2, A1, A0};  //y gr st w o
 int buttonState[buttons] = {1, 1, 1, 1, 1};
 const int ledPin[buttons] = {8, 9, 10, 11, 12};
 const int powerled = 13;
