@@ -22,6 +22,7 @@ const int encSw = 4;
 int lastCount = 0;
 volatile int virtualPosition = 0;
 const int maxValue = 7; //The number of values on the roatary encoder
+int swState = 1;
 
 bool playing[buttons] = {false, false, false, false, false};  //Is note currently playing
 unsigned long lasttrig[buttons];
@@ -55,6 +56,7 @@ void setup() {
   for (int i = 0; i < buttons; i++) {
     lasttrig[i] = millis();
   }
+  //rotary encoder I/Os
   pinMode(encClk, INPUT);
   pinMode(encDt, INPUT);
   pinMode(encSw, INPUT_PULLUP);
@@ -66,6 +68,9 @@ void setup() {
 
   //Flash LEDs to signal power on
   flashLEDs();
+
+  //Select mode and light 7seg display
+  modeSelect();
 }
 
 void loop() {
@@ -96,6 +101,13 @@ void loop() {
     
     lastCount = virtualPosition;
   }
+
+  swState = digitalRead(encSw);
+  if (swState == LOW) {
+    modeSelect();
+  }
+}
+
 // Interupt routine for rotary enconder
 void isr() {
   static unsigned long lastInterupTime = 0;
@@ -134,6 +146,17 @@ for (int i = 0 ; i < buttons; i++) {
     delay(200);
   }
   digitalWrite(ledPin[0], LOW);
+}
+
+void modeSelect() {
+    byte bits = myfnNumToBits(virtualPosition) ;
+    bits = bits | B00000001;  // add decimal point if needed
+    myfnUpdateDisplay(bits);    // display alphanumeric digit
+    Serial.print("Switch pressed value: ");  
+    Serial.print(virtualPosition);
+    Serial.print("\t");
+    Serial.println(bits, BIN);
+    delay(500);
 }
 
 void MIDIsoftreset()  // switch off ALL notes on channel 1 to 16
