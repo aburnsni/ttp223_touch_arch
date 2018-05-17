@@ -36,7 +36,7 @@ const char common = 'c';    // set to a/c for common anode/cathode
 
 void setup() {
   MIDI.begin();
- // Serial.begin(115200);  //for hairless midi
+  Serial.begin(115200);  //for hairless midi
   delay(200);
 
   MIDIsoftreset();  // Midi Reset
