@@ -10,7 +10,7 @@ int instruments[16] = {102, 999, 999, 999, 999, 999, 999, 999, 999, 999 /*Drums*
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial, MIDI);
 
 
-const int buttonPin[buttons] = {A4, A3, A2, A1, A0};  //y gr st w o
+const int buttonPin[buttons] = {18, 17, 16, 15, 14};  //y gr st w o
 int buttonState[buttons] = {1, 1, 1, 1, 1};
 const int ledPin[buttons] = {8, 9, 10, 11, 12};
 const int powerled = 13;
@@ -21,7 +21,7 @@ const int encDt = 3;
 const int encSw = 4;
 int lastCount = 0;
 volatile int virtualPosition = 0;
-const int maxValue = 7; //The number of values on the roatary encoder
+const int maxValue = 16; //The number of values on the roatary encoder
 int swState = 1;
 
 bool playing[buttons] = {false, false, false, false, false};  //Is note currently playing
@@ -187,28 +187,28 @@ void myfnUpdateDisplay(byte eightBits) {
 byte myfnNumToBits(int someNumber) {
   switch (someNumber) {
     case 0:
-      return B11111100;
+      return B01111110;
       break;
     case 1:
-      return B01100000;
+      return B00010010;
       break;
     case 2:
-      return B11011010;
+      return B10111100;
       break;
     case 3:
-      return B11110010;
-      break;
-    case 4:
-      return B01100110;
-      break;
-    case 5:
       return B10110110;
       break;
+    case 4:
+      return B11010010;
+      break;
+    case 5:
+      return B11100110;
+      break;
     case 6:
-      return B10111110;
+      return B11101110;
       break;
     case 7:
-      return B11100000;
+      return B00110010;
       break;
     case 8:
       return B11111110;
@@ -217,25 +217,25 @@ byte myfnNumToBits(int someNumber) {
       return B11110110;
       break;
     case 10:
-      return B11101110; // Hexidecimal A
+      return B11111010; // Hexidecimal A
       break;
     case 11:
-      return B00111110; // Hexidecimal B
+      return B11001110; // Hexidecimal B
       break;
     case 12:
-      return B10011100; // Hexidecimal C or use for Centigrade
+      return B01101100; // Hexidecimal C or use for Centigrade
       break;
     case 13:
-      return B01111010; // Hexidecimal D
+      return B10011110; // Hexidecimal D
       break;
     case 14:
-      return B10011110; // Hexidecimal E
+      return B11101100; // Hexidecimal E
       break;
     case 15:
-      return B10001110; // Hexidecimal F or use for Fahrenheit
+      return B11101000; // Hexidecimal F or use for Fahrenheit
       break;  
     default:
-      return B10010010; // Error condition, displays three vertical bars
+      return B10100100; // Error condition, displays three vertical bars
       break;   
   }
 }
