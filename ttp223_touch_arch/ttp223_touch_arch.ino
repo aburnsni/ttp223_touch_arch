@@ -36,7 +36,7 @@ const char common = 'c';    // set to a/c for common anode/cathode
 
 void setup() {
   MIDI.begin();
-  Serial.begin(115200);  //for hairless midi
+  // Serial.begin(115200);  //for hairless midi
   delay(200);
 
   MIDIsoftreset();  // Midi Reset
@@ -93,8 +93,8 @@ void loop() {
 
   //Check rotary encoder
   if (virtualPosition != lastCount) {
-    Serial.print(virtualPosition > lastCount ? "Up :" : "Down :");
-    Serial.println(virtualPosition);
+    // Serial.print(virtualPosition > lastCount ? "Up :" : "Down :");
+    // Serial.println(virtualPosition);
 
     byte bits = myfnNumToBits(virtualPosition) ;
     myfnUpdateDisplay(bits);    // display alphanumeric digit
@@ -152,10 +152,11 @@ void modeSelect() {
     byte bits = myfnNumToBits(virtualPosition) ;
     bits = bits | B00000001;  // add decimal point if needed
     myfnUpdateDisplay(bits);    // display alphanumeric digit
-    Serial.print("Switch pressed value: ");  
-    Serial.print(virtualPosition);
-    Serial.print("\t");
-    Serial.println(bits, BIN);
+    mode = virtualPosition;
+    // Serial.print("Switch pressed value: ");  
+    // Serial.print(virtualPosition);
+    // Serial.print("\t");
+    // Serial.println(bits, BIN);
     delay(500);
 }
 
