@@ -7,6 +7,8 @@ const int buttons = 5;
 int* song[buttons] = {NOTE_C3, NOTE_D3, NOTE_F3, NOTE_G3, NOTE_A3};
 int midiChannel[buttons] = {5, 5, 5, 5, 5}; // midi channel for each button
 int instruments[16] = {102, 999, 999, 999, 999, 999, 999, 999, 999, 999 /*Drums*/, 999, 999, 999, 999, 999, 999};
+int midiChannel[] = {1, 1, 1, 10}; // midi channel for each mode
+// int instruments[16] = {102, 999, 999, 999, 999, 999, 999, 999, 999, 999 /*Drums*/, 999, 999, 999, 999, 999, 999};
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial, MIDI);
 
 
@@ -41,7 +43,7 @@ void setup() {
 
   MIDIsoftreset();  // Midi Reset
   delay(200);
-  MIDIinstrumentset();  // Set intruments for MIDI channels
+  //MIDIinstrumentset();  // Set intruments for MIDI channels
   delay(200);
 
   // Setup I/Os
@@ -168,13 +170,13 @@ void MIDIsoftreset()  // switch off ALL notes on channel 1 to 16
   }
 }
 
-void MIDIinstrumentset() {
-  for (uint8_t i = 0; i < 16; i++) {  // Set instruments for all 16 MIDI channels
-    if (instruments[i] < 128) {
-      MIDI.sendProgramChange(instruments[i], i + 1);
-    }
-  }
-}
+// void MIDIinstrumentset() {
+//   for (uint8_t i = 0; i < 16; i++) {  // Set instruments for all 16 MIDI channels
+//     if (instruments[i] < 128) {
+//       MIDI.sendProgramChange(instruments[i], i + 1);
+//     }
+//   }
+// }
 
 void myfnUpdateDisplay(byte eightBits) {
   if (common == 'a') {                  // using a common anonde display?
