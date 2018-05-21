@@ -10,9 +10,9 @@ int instruments[16] = {102, 999, 999, 999, 999, 999, 999, 999, 999, 999 /*Drums*
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial, MIDI);
 
 
-const int buttonPin[buttons] = {18, 17, 16, 15, 14};  //y gr st w o
+const int buttonPin[buttons] = {14, 15, 16, 17, 18};  //y gr st w o
 int buttonState[buttons] = {1, 1, 1, 1, 1};
-const int ledPin[buttons] = {8, 9, 10, 11, 12};
+const int ledPin[buttons] = {12, 11, 10, 9, 8};
 const int powerled = 13;
 
 //Rotary enconder
