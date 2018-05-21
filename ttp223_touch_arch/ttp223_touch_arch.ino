@@ -2,11 +2,15 @@
 #include "midi_notes.h"
 
 const int buttons = 5;
+int mode = 0;
 
 //MIDI Setup
-int* song[buttons] = {NOTE_C3, NOTE_D3, NOTE_F3, NOTE_G3, NOTE_A3};
-int midiChannel[buttons] = {5, 5, 5, 5, 5}; // midi channel for each button
-int instruments[16] = {102, 999, 999, 999, 999, 999, 999, 999, 999, 999 /*Drums*/, 999, 999, 999, 999, 999, 999};
+int* song[][buttons] = {
+  {NOTE_C3, NOTE_D3, NOTE_F3, NOTE_G3, NOTE_A3},
+  {NOTE_C3, NOTE_D3, NOTE_E3, NOTE_F3, NOTE_G3},
+  {NOTE_C4, NOTE_CS4, NOTE_D4, NOTE_DS4, NOTE_E4},
+  {NOTE_C1, NOTE_D1, NOTE_FS1, NOTE_DS2, NOTE_CS2}  // Set midiChannel to 10 for drums
+};
 int midiChannel[] = {1, 1, 1, 10}; // midi channel for each mode
 // int instruments[16] = {102, 999, 999, 999, 999, 999, 999, 999, 999, 999 /*Drums*/, 999, 999, 999, 999, 999, 999};
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial, MIDI);
@@ -23,7 +27,7 @@ const int encDt = 3;
 const int encSw = 4;
 int lastCount = 0;
 volatile int virtualPosition = 0;
-const int maxValue = 16; //The number of values on the roatary encoder
+const int maxValue = sizeof(song)/sizeof(song[0]); //The number of values on the roatary encoder
 int swState = 1;
 
 bool playing[buttons] = {false, false, false, false, false};  //Is note currently playing
@@ -82,13 +86,13 @@ void loop() {
     if ((buttonState[i] == HIGH) && (playing[i] == false) && (millis() - lasttrig[i] > debounce)) {
       // turn LED on:
       digitalWrite(ledPin[i], HIGH);
-      MIDI.sendNoteOn(song[i], 100, midiChannel[i]);
+      MIDI.sendNoteOn(song[mode][i], 100, midiChannel[mode]);
       playing[i] = true;
       lasttrig[i] = millis();
     } else if ((buttonState[i] == LOW) && (playing[i] == true)) {
       // turn LED off:
       digitalWrite(ledPin[i], LOW);
-      MIDI.sendNoteOff(song[i], 100, midiChannel[i]);
+      MIDI.sendNoteOff(song[mode][i], 100, midiChannel[mode]);
       playing[i] = false;
     }
   }
