@@ -1,17 +1,24 @@
 #include <MIDI.h>
 #include "midi_notes.h"
+#include "midi_chords.h"
+
+const bool DEBUG = 0;
 
 const int buttons = 5;
 int mode = 0;
+int strum = 5;  // delay between each note of strum
 
 //MIDI Setup
 int* song[][buttons] = {
   {NOTE_C3, NOTE_D3, NOTE_F3, NOTE_G3, NOTE_A3},
   {NOTE_C3, NOTE_D3, NOTE_E3, NOTE_F3, NOTE_G3},
   {NOTE_C4, NOTE_CS4, NOTE_D4, NOTE_DS4, NOTE_E4},
-  {NOTE_C1, NOTE_D1, NOTE_FS1, NOTE_DS2, NOTE_CS2}  // Set midiChannel to 10 for drums
+  {NOTE_C1, NOTE_D1, NOTE_FS1, NOTE_DS2, NOTE_CS2},  // Set midiChannel to 10 for drums
+  {CHORD_Em, CHORD_EmD, CHORD_EmC, CHORD_EmB, CHORD_B}  // Set midiChannel to 10 for drums
 };
-int midiChannel[] = {1, 1, 1, 10}; // midi channel for each mode
+char style[] {'n', 'n', 'n', 'n', 'c'};
+
+int midiChannel[] = {1, 1, 1, 10, 2}; // midi channel for each mode
 // int instruments[16] = {102, 999, 999, 999, 999, 999, 999, 999, 999, 999 /*Drums*/, 999, 999, 999, 999, 999, 999};
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial, MIDI);
 
@@ -27,7 +34,7 @@ const int encDt = 3;
 const int encSw = 4;
 int lastCount = 0;
 volatile int virtualPosition = 0;
-const int maxValue = sizeof(song)/sizeof(song[0]); //The number of values on the roatary encoder
+const int maxValue = sizeof(song) / sizeof(song[0]); //The number of values on the roatary encoder
 int swState = 1;
 
 bool playing[buttons] = {false, false, false, false, false};  //Is note currently playing
@@ -42,10 +49,12 @@ const char common = 'c';    // set to a/c for common anode/cathode
 
 void setup() {
   MIDI.begin();
-  // Serial.begin(115200);  //for hairless midi
+  if (DEBUG) {
+    Serial.begin(115200);  //for hairless midi
+  }
   delay(200);
 
-  MIDIsoftreset();  // Midi Reset
+  //MIDIsoftreset();  // Midi Reset
   delay(200);
   //MIDIinstrumentset();  // Set intruments for MIDI channels
   delay(200);
@@ -80,37 +89,67 @@ void setup() {
 }
 
 void loop() {
-
   for (uint8_t i = 0; i < buttons; i++) {
     buttonState[i] = digitalRead(buttonPin[i]);
     if ((buttonState[i] == HIGH) && (playing[i] == false) && (millis() - lasttrig[i] > debounce)) {
       // turn LED on:
       digitalWrite(ledPin[i], HIGH);
-      MIDI.sendNoteOn(song[mode][i], 100, midiChannel[mode]);
+      if (style[mode] == 'n') {
+        if (DEBUG) {
+          Serial.print("Note: ");
+          int value = song[mode][i];
+          Serial.print(value);
+          Serial.print("\t");
+          Serial.print("Channel: ");
+          Serial.println(midiChannel[mode]);
+        } else {
+          MIDI.sendNoteOn(song[mode][i], 100, midiChannel[mode]);
+        }
+      } else {
+        if (DEBUG) {
+          Serial.print("Chord: ");
+          Serial.println(i);
+        } else {
+          playChord(song[mode][i], midiChannel[mode]);
+        }
+      }
       playing[i] = true;
       lasttrig[i] = millis();
     } else if ((buttonState[i] == LOW) && (playing[i] == true)) {
       // turn LED off:
       digitalWrite(ledPin[i], LOW);
-      MIDI.sendNoteOff(song[mode][i], 100, midiChannel[mode]);
+      if (style[mode] == 'n') {
+        if (DEBUG) {
+          Serial.println("NoteOff");
+        } else {
+          MIDI.sendNoteOff(song[mode][i], 100, midiChannel[mode]);
+        }
+      } else {
+        if (DEBUG) {
+          Serial.println("NoteOff");
+        } else {
+          stopChord(song[mode][i], midiChannel[mode]);
+        }
+      }
       playing[i] = false;
     }
-  }
 
-  //Check rotary encoder
-  if (virtualPosition != lastCount) {
-    // Serial.print(virtualPosition > lastCount ? "Up :" : "Down :");
-    // Serial.println(virtualPosition);
 
-    byte bits = myfnNumToBits(virtualPosition) ;
-    myfnUpdateDisplay(bits);    // display alphanumeric digit
-    
-    lastCount = virtualPosition;
-  }
+    //Check rotary encoder
+    if (virtualPosition != lastCount) {
+      // Serial.print(virtualPosition > lastCount ? "Up :" : "Down :");
+      // Serial.println(virtualPosition);
 
-  swState = digitalRead(encSw);
-  if (swState == LOW) {
-    modeSelect();
+      byte bits = myfnNumToBits(virtualPosition) ;
+      myfnUpdateDisplay(bits);    // display alphanumeric digit
+
+      lastCount = virtualPosition;
+    }
+
+    swState = digitalRead(encSw);
+    if (swState == LOW) {
+      modeSelect();
+    }
   }
 }
 
@@ -121,19 +160,19 @@ void isr() {
 
   // Debounce signals to 5ms
   if (interuptTime - lastInterupTime > 5) {
-    if (digitalRead(encDt) ==LOW) {
+    if (digitalRead(encDt) == LOW) {
       virtualPosition++;
     } else {
       virtualPosition--;
     }
     //Restrict rotary encoder values
-    virtualPosition = min(maxValue-1, max(0, virtualPosition));
+    virtualPosition = min(maxValue - 1, max(0, virtualPosition));
     lastInterupTime = interuptTime;
   }
 }
 
 void flashLEDs() {
-for (int i = 0 ; i < buttons; i++) {
+  for (int i = 0 ; i < buttons; i++) {
     digitalWrite(ledPin[i], HIGH);
     for (int j = 0; j < buttons; j++) {
       if (j != i) {
@@ -155,19 +194,38 @@ for (int i = 0 ; i < buttons; i++) {
 }
 
 void modeSelect() {
-    byte bits = myfnNumToBits(virtualPosition) ;
-    bits = bits | B00000001;  // add decimal point if needed
-    myfnUpdateDisplay(bits);    // display alphanumeric digit
-    mode = virtualPosition;
-    // Serial.print("Switch pressed value: ");  
-    // Serial.print(virtualPosition);
-    // Serial.print("\t");
-    // Serial.println(bits, BIN);
-    delay(500);
+  byte bits = myfnNumToBits(virtualPosition) ;
+  bits = bits | B00000001;  // add decimal point if needed
+  myfnUpdateDisplay(bits);    // display alphanumeric digit
+  mode = virtualPosition;
+  if (DEBUG) {
+    Serial.print("Switch pressed value: ");
+    Serial.print(virtualPosition);
+    Serial.print("\t");
+    Serial.println(bits, BIN);
+  }
+  delay(500);
 }
 
-void MIDIsoftreset()  // switch off ALL notes on channel 1 to 16
-{
+void playChord(int i[], int channel) {
+  for (uint8_t note = 0; note < 6; note++) {
+    if (i[note]) {
+      MIDI.sendNoteOn((i[note]), 100, channel);
+      delay(strum);
+    }
+  }
+}
+
+void stopChord(int i[], int channel) {
+  for (uint8_t note = 0; note < 6; note++) {
+    if (i[note]) {
+      MIDI.sendNoteOff((i[note]), 100, channel);
+      delay(strum);
+    }
+  }
+}
+
+void MIDIsoftreset() { // switch off ALL notes on channel 1 to 16
   for (int channel = 0; channel < 16; channel++)
   {
     MIDI.sendControlChange(123, 0, channel);
@@ -184,7 +242,7 @@ void MIDIsoftreset()  // switch off ALL notes on channel 1 to 16
 
 void myfnUpdateDisplay(byte eightBits) {
   if (common == 'a') {                  // using a common anonde display?
-    eightBits = eightBits ^ B11111111;  // then flip all bits using XOR 
+    eightBits = eightBits ^ B11111111;  // then flip all bits using XOR
   }
   digitalWrite(ledLatchPin, LOW);  // prepare shift register for data
   shiftOut(ledDataPin, ledClockPin, LSBFIRST, eightBits); // send data
@@ -240,9 +298,9 @@ byte myfnNumToBits(int someNumber) {
       break;
     case 15:
       return B11101000; // Hexidecimal F or use for Fahrenheit
-      break;  
+      break;
     default:
       return B10100100; // Error condition, displays three vertical bars
-      break;   
+      break;
   }
 }
