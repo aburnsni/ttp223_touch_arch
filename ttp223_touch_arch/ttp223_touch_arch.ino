@@ -1,4 +1,5 @@
 #include <MIDI.h>
+#include <EEPROM.h>
 #include "midi_notes.h"
 #include "midi_chords.h"
 
@@ -84,6 +85,13 @@ void setup() {
 
   //Flash LEDs to signal power on
   flashLEDs();
+
+//Read stored mode from EEPROM
+  virtualPosition = EEPROM.read(0);
+  if (virtualPosition > maxValue) {  // Set to 0 if out of range
+    virtualPosition = 0;
+  }
+  lastCount = virtualPosition;
 
   //Select mode and light 7seg display
   modeSelect();
@@ -205,6 +213,7 @@ void modeSelect() {
     Serial.print("\t");
     Serial.println(bits, BIN);
   }
+  EEPROM.update(0, virtualPosition);
   delay(500);
 }
 
