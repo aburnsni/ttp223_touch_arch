@@ -179,7 +179,7 @@ void flashLEDs() {
         digitalWrite(ledPin[j], LOW);
       }
     }
-    delay(200);
+    delay(100);
   }
   for (int i = ( buttons - 2) ; i >= 0; i--) {
     digitalWrite(ledPin[i], HIGH);
@@ -188,7 +188,7 @@ void flashLEDs() {
         digitalWrite(ledPin[j], LOW);
       }
     }
-    delay(200);
+    delay(100);
   }
   digitalWrite(ledPin[0], LOW);
 }
