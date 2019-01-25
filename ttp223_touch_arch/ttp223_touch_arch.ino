@@ -16,11 +16,12 @@ int* song[][buttons] = {
   {NOTE_C4, NOTE_CS4, NOTE_D4, NOTE_DS4, NOTE_E4},
   {NOTE_C2, NOTE_D2, NOTE_FS2, NOTE_DS2, NOTE_CS2},  // Set midiChannel to 10 for drums
   {CHORD_Em, CHORD_EmD, CHORD_EmC, CHORD_EmB, CHORD_B},
-  {NOTE_FS3, NOTE_GS3, NOTE_AS3, NOTE_CS4, NOTE_DS4}
+  {NOTE_FS3, NOTE_GS3, NOTE_AS3, NOTE_CS4, NOTE_DS4},
+  {NOTE_C3, NOTE_D3, NOTE_E3, NOTE_FS3, NOTE_GS3}
   };
-char style[] {'n', 'n', 'n', 'n', 'c', 'n'};
+char style[] {'n', 'n', 'n', 'n', 'c', 'n', 'n'};
 
-int midiChannel[] = {2, 2, 2, 10, 2, 2}; // midi channel for each mode
+int midiChannel[] = {2, 2, 2, 10, 2, 2, 2}; // midi channel for each mode
 // int instruments[16] = {102, 999, 999, 999, 999, 999, 999, 999, 999, 999 /*Drums*/, 999, 999, 999, 999, 999, 999};
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial, MIDI);
 
